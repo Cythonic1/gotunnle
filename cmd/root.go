@@ -7,7 +7,7 @@ import (
 	_ "github.com/spf13/viper"
 )
 
-
+// TODO: Implement the root command
 var rootCmd = &cobra.Command{
 	Use:   "gotunnl",
 	Short: "Tunnling tool to tunnl your traffic DUH",

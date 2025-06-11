@@ -9,9 +9,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-var src string
-var dest string
-
+var localPort string
+var bindPort string
 
 // filesCmd represents the files command
 var normalMod = &cobra.Command{
@@ -19,16 +18,16 @@ var normalMod = &cobra.Command{
 	Short: "tunnle using socket",
 	Long:  `Quickly scan a directory and find large files. . Use the flags below to target the output.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		pkg.InitTunnling().SetSrc(src).SetDest(dest).RunTun()
+		pkg.InitTunnling().SetLocalPort(localPort).SetBindPort(bindPort).RunTun()
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(normalMod)
 
-	normalMod.PersistentFlags().StringVarP(&src, "src", "s", "", "Src is from where the traffic gonna be generated ('localhost:2502')")
-	viper.BindPFlag("src", normalMod.PersistentFlags().Lookup("src"))
+	normalMod.PersistentFlags().StringVarP(&localPort, "localPort", "l", "", "Listen port")
+	viper.BindPFlag("localPort", normalMod.PersistentFlags().Lookup("localPort"))
 
-	normalMod.PersistentFlags().StringVarP(&dest, "dest", "d", "", "Connect to where ('localhost:2502')")
-	viper.BindPFlag("dest", normalMod.PersistentFlags().Lookup("src"))
+	normalMod.PersistentFlags().StringVarP(&bindPort, "bindPort", "b", "", "Which port forward traffic from")
+	viper.BindPFlag("bindPort", normalMod.PersistentFlags().Lookup("bindPort"))
 }
