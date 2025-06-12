@@ -15,29 +15,19 @@ type Tunnling struct {
 	bindPort  string
 }
 
-//TODO : Implement client action.
+// This work for client
+func forward(client net.Conn, targetAddr string) {
+	defer client.Close()
 
-// Still need some modification in here.
-// i need to make it listen on the bindPort or get traffic from there.
-// and then forward it to the client
-func forward(client net.Conn, tun *Tunnling) {
-	// when client connect to the internal services
-	bindPort, err := net.Listen("tcp", tun.bindPort)
-
+	localBind, err := net.Dial("tcp", targetAddr)
 	if err != nil {
-		log.Fatal("Faild to listent", err)
-		client.Close()
+		log.Println("Failed to connect to local target:", err)
 		return
 	}
-	localBind, err := bindPort.Accept()
-	if err != nil {
-		log.Fatal("Error ", err)
-	}
+	defer localBind.Close()
 
-	defer bindPort.Close()
-
-	go func() { io.Copy(localBind, client) }() // Client -> Destination
-	io.Copy(client, localBind)                 // Destination -> Client
+	go io.Copy(localBind, client) // Client -> Service
+	io.Copy(client, localBind)    // Service -> Client
 }
 
 func InitTunnling() *Tunnling {
@@ -74,6 +64,6 @@ func (tun *Tunnling) RunTun() {
 		slog.Info("New client connected", "addr", client.RemoteAddr())
 
 		// Forward traffic to localhost:4444
-		go forward(client, tun)
+		go forward(client, "localhost:4444")
 	}
 }
