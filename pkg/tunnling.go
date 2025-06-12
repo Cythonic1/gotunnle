@@ -21,19 +21,23 @@ type Tunnling struct {
 // i need to make it listen on the bindPort or get traffic from there.
 // and then forward it to the client
 func forward(client net.Conn, tun *Tunnling) {
-	// Connect to the bindPortination (localhost:4444) just for testing
-	// The bindPortination here is the internal services for example SQL
-	// Connecting on port 3306
-	bindPort, err := net.Dial("tcp", tun.bindPort)
+	// when client connect to the internal services
+	bindPort, err := net.Listen("tcp", tun.bindPort)
+
 	if err != nil {
-		log.Printf("Failed to connect to bindPortination: %v", err)
+		log.Fatal("Faild to listent", err)
 		client.Close()
 		return
 	}
+	localBind, err := bindPort.Accept()
+	if err != nil {
+		log.Fatal("Error ", err)
+	}
+
 	defer bindPort.Close()
 
-	go func() { io.Copy(bindPort, client) }() // Client -> Destination
-	io.Copy(client, bindPort)                 // Destination -> Client
+	go func() { io.Copy(localBind, client) }() // Client -> Destination
+	io.Copy(client, localBind)                 // Destination -> Client
 }
 
 func InitTunnling() *Tunnling {
