@@ -30,6 +30,26 @@ func forward(client net.Conn, targetAddr string) {
 	io.Copy(client, localBind)    // Service -> Client
 }
 
+func bindLocal(localBind string, client net.Conn) {
+	bind, err := net.Listen("tcp", localBind)
+	if err != nil {
+		log.Fatalf("error %s", err)
+	}
+	defer bind.Close()
+
+	for {
+		conn, err := bind.Accept()
+		if err != nil {
+			log.Println("error accepting local bind:", err)
+			continue
+		}
+		go func(c net.Conn) {
+			defer c.Close()
+			go io.Copy(client, c) // From bindPort to client
+			io.Copy(c, client)    // From client to bindPort
+		}(conn)
+	}
+}
 func InitTunnling() *Tunnling {
 	return &Tunnling{}
 }
@@ -64,6 +84,6 @@ func (tun *Tunnling) RunTun() {
 		slog.Info("New client connected", "addr", client.RemoteAddr())
 
 		// Forward traffic to localhost:4444
-		go forward(client, "localhost:4444")
+		go bindLocal(tun.bindPort, client)
 	}
 }
