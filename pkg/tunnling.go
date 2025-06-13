@@ -22,6 +22,7 @@ func BiForwarding(src, dst net.Conn) {
 
 // This work for client
 func ClientInternal(service string, targetAddr string) {
+	// Connected to the attacker tunnl
 	attacker, err := net.Dial("tcp", targetAddr)
 	if err != nil {
 		log.Println("Failed to connect to attacker server:", err)
@@ -29,6 +30,7 @@ func ClientInternal(service string, targetAddr string) {
 	}
 	defer attacker.Close()
 
+	// connect to the internal service
 	internalService, err := net.Dial("tcp", service)
 	if err != nil {
 		log.Println("Failed to connect to internal service:", err)
@@ -36,16 +38,19 @@ func ClientInternal(service string, targetAddr string) {
 	}
 	defer internalService.Close()
 
+	// forward the traffic
 	BiForwarding(attacker, internalService)
 }
 
+// solve port keep connected and in use
 func bindLocal(localBind string, client net.Conn) {
+	// Here it going to listen for any thing on the bind port and forward it to the connected client
 	bind, err := net.Listen("tcp", localBind)
 	if err != nil {
 		log.Fatalf("error %s", err)
 	}
-	defer bind.Close()
 
+	defer bind.Close()
 	for {
 		conn, err := bind.Accept()
 		if err != nil {
