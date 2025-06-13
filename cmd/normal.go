@@ -4,7 +4,6 @@ Copyright © 2025 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"github.com/Cythonic1/pkg"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -12,15 +11,22 @@ import (
 var localPort string
 var bindPort string
 
-// filesCmd represents the files command
 var normalMod = &cobra.Command{
-	Use:   "normal --local-port",
-	Short: "tunnle using socket",
-	Long:  `Quickly scan a directory and find large files. . Use the flags below to target the output.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		pkg.InitTunnling().SetLocalPort(localPort).SetBindPort(bindPort).RunTun()
-	},
+	Use:   "normal",
+	Short: "Normal socket tunneling mode",
+	Long:  "Normal TCP-based tunnel — supports server and client roles",
+	// No Run here — we expect subcommands
 }
+
+// filesCmd represents the files command
+// var normalMod = &cobra.Command{
+// 	Use:   "normal --local-port",
+// 	Short: "tunnle using socket",
+// 	Long:  `Quickly scan a directory and find large files. . Use the flags below to target the output.`,
+// 	Run: func(cmd *cobra.Command, args []string) {
+// 		pkg.InitTunnling().SetLocalPort(localPort).SetBindPort(bindPort).RunTun()
+// 	},
+// }
 
 func init() {
 	rootCmd.AddCommand(normalMod)

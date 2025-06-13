@@ -15,19 +15,26 @@ type Tunnling struct {
 	bindPort  string
 }
 
-// This work for client
-func forward(client net.Conn, targetAddr string) {
-	defer client.Close()
+func BiForwarding(src, dst net.Conn) {
+	go io.Copy(src, dst) // Client -> Service
+	go io.Copy(dst, src) // Service -> Client
+}
 
-	localBind, err := net.Dial("tcp", targetAddr)
+// This work for client
+func ClientInternal(service string, targetAddr string) {
+
+	// connecting to the attackers server
+	attacker, err := net.Dial("tcp", targetAddr)
 	if err != nil {
 		log.Println("Failed to connect to local target:", err)
 		return
 	}
-	defer localBind.Close()
 
-	go io.Copy(localBind, client) // Client -> Service
-	io.Copy(client, localBind)    // Service -> Client
+	internalService, err := net.Dial("tcp", service)
+
+	defer attacker.Close()
+
+	go BiForwarding(internalService, attacker)
 }
 
 func bindLocal(localBind string, client net.Conn) {
@@ -43,11 +50,7 @@ func bindLocal(localBind string, client net.Conn) {
 			log.Println("error accepting local bind:", err)
 			continue
 		}
-		go func(c net.Conn) {
-			defer c.Close()
-			go io.Copy(client, c) // From bindPort to client
-			io.Copy(c, client)    // From client to bindPort
-		}(conn)
+		go BiForwarding(client, conn)
 	}
 }
 func InitTunnling() *Tunnling {
