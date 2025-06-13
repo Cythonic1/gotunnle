@@ -21,7 +21,7 @@ func init() {
 	normalClient.Flags().StringVarP(&target, "target", "t", "", "target service ip:port (localhost:8080)")
 	normalClient.Flags().StringVarP(&serverAddr, "serveraddr", "s", "", "server address (localhost:8080)")
 	viper.BindPFlag("target", normalClient.Flags().Lookup("target"))
-	viper.BindPFlag("port", normalClient.Flags().Lookup("serveraddr"))
+	viper.BindPFlag("serveraddr", normalClient.Flags().Lookup("serveraddr"))
 
 	normalMod.AddCommand(normalClient)
 }
