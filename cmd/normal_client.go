@@ -7,21 +7,21 @@ import (
 )
 
 var target string
-var port string
+var serverAddr string
 
 var normalClient = &cobra.Command{
 	Use:   "client",
 	Short: "Start the tunnel client (connects to server)",
 	Run: func(cmd *cobra.Command, args []string) {
-		pkg.ClientInternal(target, port)
+		pkg.ClientInternal(target, serverAddr)
 	},
 }
 
 func init() {
-	normalClient.Flags().StringVarP(&target, "target", "t", "", "Target server IP")
-	normalClient.Flags().StringVarP(&port, "port", "p", "", "Target server port")
+	normalClient.Flags().StringVarP(&target, "target", "t", "", "target service ip:port (localhost:8080)")
+	normalClient.Flags().StringVarP(&serverAddr, "serveraddr", "s", "", "server address (localhost:8080)")
 	viper.BindPFlag("target", normalClient.Flags().Lookup("target"))
-	viper.BindPFlag("port", normalClient.Flags().Lookup("port"))
+	viper.BindPFlag("port", normalClient.Flags().Lookup("serveraddr"))
 
 	normalMod.AddCommand(normalClient)
 }
